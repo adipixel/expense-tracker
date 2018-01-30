@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const UserSchema = mongoose.Schema({
+const ExpenseTrackerSchema = mongoose.Schema({
 	first_name:{
 		type: String,
 		required: true
@@ -11,8 +11,31 @@ const UserSchema = mongoose.Schema({
 	},
 	email:{
 		type: String,
+		required: true,
+		unique: true
+	},
+	password_hash:{
+		type: String,
 		required: true
+	},
+	expenses:[
+		{
+			createdAt: {
+				type: Date
+			},
+			amount: {
+				type: Number
+			},
+			description: String
+		}
+	],
+	total_expense: {
+		type: Number
+	},
+	role: {
+		type: String
 	}
-});
 
-const User = module.exports = mongoose.model('User', UserSchema);
+}, { strict: false });
+
+const User = module.exports = mongoose.model('User', ExpenseTrackerSchema);

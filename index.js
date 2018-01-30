@@ -5,12 +5,13 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 
 
+
 const app = express();
 
 const api_route = require('./routes/api_route.js');
 
 // connect to mongodb
-mongoose.connect('mongodb://localhost:27017/userlist');
+mongoose.connect('mongodb://localhost:27017/expense_tracker_users');
 mongoose.connection.on('connected', ()=>{
 	console.log('connected to database MongoDB');
 });

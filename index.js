@@ -3,10 +3,16 @@ const bodyParser = require('body-parser');
 const path = require('path');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const session = require('express-session');
 
 
 
 const app = express();
+
+
+// middleware express-session
+app.use(session({ secret: 'Yahama Fazer', resave: true, saveUninitialized: true}));
+
 
 const api_route = require('./routes/api_route.js');
 
@@ -20,6 +26,7 @@ mongoose.connection.on('error', (err)=>{
 		console.log('Error in database connection: '+ err);
 	}
 });
+
 
 // Middleware - cors
 app.use(cors());

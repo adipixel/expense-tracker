@@ -13,7 +13,7 @@ router.post('/user/verify', (req, res) => {
 	User.findOne({email: req.body.email},
 		(err, users)=>{
 			if(err){
-				res.json({"verification:" : false, "error": "Invalid"});
+				res.json({success: false, msg: "Invalid", data: []});
 			}
 			if(users){
 				pass_hash = users.password_hash;
@@ -21,14 +21,16 @@ router.post('/user/verify', (req, res) => {
 				verification = password_hash.verify(curPass, pass_hash);
 				if(verification){
 					req.session.user_id = users._id;
-					res.redirect(''+ users._id);
+					//res.redirect(''+ users._id);
+					console.log("User logged in");
+					res.json({success: true, msg: "Login Successful", data: users._id});
 				}
 				else{
-					res.json({"verification:" : false, "error": "Invalid password"});
+					res.json({success: false, msg: "Invalid password", data: []});
 				}
 			}
 			else{
-					res.json({"verification:" : false, "error": "Invalid email id"});
+					res.json({success: false, msg: "Invalid email id", data: []});
 				}
 	});
 
@@ -37,7 +39,7 @@ router.post('/user/verify', (req, res) => {
 // check authentication
 function checkAuth(req, res, next) {
 	if (!req.session.user_id) {
-		res.send('You are not authenticated to view this page');
+		res.json({success: false, msg: 'You are not authenticated to view this page', data: []});
 	}
 	else {
 		next();
@@ -58,9 +60,21 @@ function getLoggedUser(id, callback) {
 // logout user
 router.get('/user/logout', function (req, res) {
 	delete req.session.user_id;
-	res.json({"msg:" :"Logged out"});
+	res.json({success: true, msg :"Logged out", data: []});
 });
 
+// temp route
+router.get('/users/temp', (req, res) => {
+	User.find((error, userList)=>{
+		if(!error)
+		{
+			res.json({success: true, msg:"", data: userList});
+		}
+		else{
+			res.json({"success:" : false, "msg": "Permission denied. You need to be a admin"});
+		}
+	});
+});
 
 
 // get users
@@ -68,19 +82,22 @@ router.get('/users', checkAuth, (req, res) => {
 	// athorizing user
 	getLoggedUser(req.session.user_id, function(err, logged_user){
 		if(err){
-			res.json({msg: "Please login again"});
+			res.json({success: false, msg: "Please login again", data: []});
 		}
 		// check if admin
 		if(logged_user.role == 'admin'){
 			User.find((error, userList)=>{
 				if(!err)
 				{
-					res.json(userList);
+					res.json({success: true, msg: "success", data: userList});
 				}
 				else{
-					res.json({msg: "Permission denied. You need to be a admin"});
+					res.json({success: false, msg: "Permission denied. You need to be a admin", data: []});
 				}
-			});
+			}).select('-password_hash');
+		}
+		else{
+			res.json({success: false, msg: "Permission denied. You need to be a admin", data: []});
 		}
 	});
 
@@ -92,33 +109,41 @@ router.get('/user/:id', checkAuth, (req, res) => {
 	if(req.params.id == req.session.user_id){
 		User.find({_id: req.params.id}, (err, user)=>{
 			if(!err){
-				res.json(user);
+				res.json({success: true, msg: "", data: user});
 			}
-		})
+			else{
+				res.json({success: false, msg: "Invalid user", data: []});
+			}
+		}).select('-password_hash');
 	}
-	// authorization for admin to read data
-	getLoggedUser(req.session.user_id, function(err, logged_user){
-		if(err){
-			res.json({msg: "Please login again"});
-		}
-		// check if admin
-		if(logged_user.role == 'admin'){
-			User.find({_id: req.params.id}, (error, user)=>{
-				if(!err)
-				{
-					res.json(user);
-				}
-				else{
-					res.json({msg: "Permission denied. You need to be a admin"});
-				}
-			});
-		}
-	});
+	else
+	{
+		// authorization for admin to read data
+		getLoggedUser(req.session.user_id, function(err, logged_user){
+			if(err){
+				res.json({success: false, msg: "Please login again", data: []});
+			}
+			// check if admin
+			if(logged_user.role == 'admin'){
+				User.find({_id: req.params.id}, (error, user)=>{
+					if(!err)
+					{
+						res.json({success: true, msg: "Success", data: user});
+					}
+					else{
+						res.json({success: false, msg: "Permission denied. You need to be a admin", data: []});
+					}
+				}).select('-password_hash');
+			}
+		});
+	}
+
+
 });
 
 // add user
 router.post('/user/add', (req, res) => {
-	let pwd = password_hash.generate(req.body.password_hash);
+	let pwd = password_hash.generate(req.body.password);
 	let newUser = new User({
 		first_name: req.body.first_name,
 		last_name: req.body.last_name,
@@ -131,16 +156,17 @@ router.post('/user/add', (req, res) => {
 
 	newUser.save((err, user)=>{
 		if (err){
-			res.json({msg: 'Failed to add user'+ err});
+			res.json({success: false, msg: 'Failed to add user', data: []});
 		}
 		else
 		{
-			res.json({msg: 'User added'});
+			//res.json({msg: 'User added'});
+			res.json({success: true, msg:"", data: user});
 		}
 	});
 });
 
-// delete user
+// update user
 router.put('/user/update/:id', checkAuth, (req, res) => {
 	// authorize for only own data access
 	if(req.params.id == req.session.user_id){
@@ -159,11 +185,11 @@ router.put('/user/update/:id', checkAuth, (req, res) => {
 			},
 			(err, result)=>{
 				if (err){
-					res.json({msg: 'Failed to update user: '+ err});
+					res.json({success: false, msg: 'Failed to update user', data: []});
 				}
 				else
 				{
-					res.json(result);
+					res.json({success: true, msg:"", data: result});
 				}
 		});
 	}
@@ -181,11 +207,11 @@ router.delete('/user/delete/:id', checkAuth, (req, res) => {
 	if(req.params.id == req.session.user_id){
 		User.remove({_id: req.params.id}, (err, result)=>{
 			if (err){
-				res.json({msg: 'Failed to delete user: '+ err});
+				res.json({success: false, msg: 'Failed to delete user: ', data: []});
 			}
 			else
 			{
-				res.json(result);
+				res.json({success: true, msg: "", data: result});
 			}
 		});
 	}

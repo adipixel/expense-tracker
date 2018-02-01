@@ -1,14 +1,29 @@
 <div class="container">
-  <h3>Sign Up</h3>
-  <form class="form" (submit)="loginSubmit()">
-    <label  for="first_name">First name</label>
-    <input class="form-control" type="text" placeholder="First Name" name="first_name" [(ngModel)]="first_name" />
-    <label for="last_name">First name</label>
-    <input class="form-control" type="text" placeholder="Last Name" name="last_name" [(ngModel)]="last_name">
-    <label for="email">Email</label>
-    <input class="form-control" type="email" placeholder="Email id" name="email" [(ngModel)]="email">
-    <label for="password">Email</label>
-    <input class="form-control" type="password" placeholder="Password" name="password" [(ngModel)]="password">
-    <input type="submit" value="Sign Up">
-  </form>
+  <div class="row">
+    <div class="col-6">
+        <h3>Login</h3>
+        <form class="form" (submit)="loginSubmit()">
+          <label for="email">Email</label>
+          <input class="form-control" type="email" placeholder="Email id" name="email" [(ngModel)]="login_email">
+          <label for="password">Password</label>
+          <input class="form-control" type="password" placeholder="Password" name="password" [(ngModel)]="login_password">
+          <input type="submit" class="btn btn-primary" value="Login">
+        </form>
+    </div>
+    <div class="col-6">
+        <h3>Sign Up</h3>
+        <form class="form" (submit)="signupSubmit()">
+          <label  for="first_name">First name</label>
+          <input class="form-control" type="text" placeholder="First Name" name="first_name" [(ngModel)]="first_name" />
+          <label for="last_name">Last name</label>
+          <input class="form-control" type="text" placeholder="Last Name" name="last_name" [(ngModel)]="last_name">
+          <label for="email">Email</label>
+          <input class="form-control" type="email" placeholder="Email id" name="email" [(ngModel)]="email">
+          <label for="password">Password</label>
+          <input class="form-control" type="password" placeholder="Password" name="password" [(ngModel)]="password">
+          <input type="submit" class="btn btn-primary" value="Sign Up">
+        </form>      
+      </div>
+  </div>
+
 </div>

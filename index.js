@@ -11,7 +11,7 @@ const app = express();
 
 
 // middleware express-session
-app.use(session({ secret: 'Yahama Fazer', resave: true, saveUninitialized: true}));
+app.use(session({ secret: 'Yahama Fazer', resave: true, saveUninitialized: true, cookie: { maxAge: 600000000 }}));
 
 
 const api_route = require('./routes/api_route.js');

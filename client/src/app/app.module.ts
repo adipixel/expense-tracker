@@ -10,6 +10,7 @@ import { LoginComponent } from './components/login/login.component';
 import { DataService } from  './services/data.service';
 import { AboutComponent } from './components/about/about.component';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
+import { NavbarComponent } from './components/navbar/navbar.component';
 
 const appRoutes: Routes = [
   {path: '', component:LoginComponent},
@@ -22,7 +23,8 @@ const appRoutes: Routes = [
     AppComponent,
     LoginComponent,
     AboutComponent,
-    DashboardComponent
+    DashboardComponent,
+    NavbarComponent
   ],
   imports: [
     BrowserModule,

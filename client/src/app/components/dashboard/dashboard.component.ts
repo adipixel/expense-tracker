@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { DataService } from  '../../services/data.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-dashboard',
@@ -10,18 +11,20 @@ export class DashboardComponent implements OnInit {
   users: User[];
   response: Response;
 
-  constructor(private dataService:DataService) {
+  constructor(private dataService:DataService, private router:Router) {
     
-   }
+  }
 
   ngOnInit() {
-    this.dataService.getUsers().subscribe(users => {
+    var token = localStorage.getItem('token');
+    this.dataService.getUsers(token).subscribe(users => {
       if (users.success){
         this.users = users.data;
-        console.log(this.users);
+        console.log(users.data);
       }
       else{
         // error handling
+        this.router.navigate(['']);
         console.log(users.msg);
       }
     })

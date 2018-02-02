@@ -2,144 +2,10 @@ const express = require('express');
 const router = express.Router();
 const password_hash = require('password-hash');
 const session = require('express-session');
+var jwt = require('jsonwebtoken');
 
 const User = require('../models/users')
-
-
-// verify user
-router.post('/user/verify', (req, res) => {
-	let curPass = req.body.password;
-	var pass_hash = "";
-	User.findOne({email: req.body.email},
-		(err, users)=>{
-			if(err){
-				res.json({success: false, msg: "Invalid", data: []});
-			}
-			if(users){
-				pass_hash = users.password_hash;
-				//res.json({"pass":pass_hash, "curPass": curPass});
-				verification = password_hash.verify(curPass, pass_hash);
-				if(verification){
-					req.session.user_id = users._id;
-					//res.redirect(''+ users._id);
-					console.log("User logged in");
-					res.json({success: true, msg: "Login Successful", data: users._id});
-				}
-				else{
-					res.json({success: false, msg: "Invalid password", data: []});
-				}
-			}
-			else{
-					res.json({success: false, msg: "Invalid email id", data: []});
-				}
-	});
-
-});
-
-// check authentication
-function checkAuth(req, res, next) {
-	if (!req.session.user_id) {
-		res.json({success: false, msg: 'You are not authenticated to view this page', data: []});
-	}
-	else {
-		next();
-	}
-}
-
-// get logged user
-function getLoggedUser(id, callback) {
-	User.find({_id: id}).lean().exec(function (err, docs) {
-		if(err)
-		{
-			return false;
-		}
-		callback(null, JSON.parse(JSON.stringify(docs[0])));
-	});
-}
-
-// logout user
-router.get('/user/logout', function (req, res) {
-	delete req.session.user_id;
-	res.json({success: true, msg :"Logged out", data: []});
-});
-
-// temp route
-router.get('/users/temp', (req, res) => {
-	User.find((error, userList)=>{
-		if(!error)
-		{
-			res.json({success: true, msg:"", data: userList});
-		}
-		else{
-			res.json({"success:" : false, "msg": "Permission denied. You need to be a admin"});
-		}
-	});
-});
-
-
-// get users
-router.get('/users', checkAuth, (req, res) => {
-	// athorizing user
-	getLoggedUser(req.session.user_id, function(err, logged_user){
-		if(err){
-			res.json({success: false, msg: "Please login again", data: []});
-		}
-		// check if admin
-		if(logged_user.role == 'admin'){
-			User.find((error, userList)=>{
-				if(!err)
-				{
-					res.json({success: true, msg: "success", data: userList});
-				}
-				else{
-					res.json({success: false, msg: "Permission denied. You need to be a admin", data: []});
-				}
-			}).select('-password_hash');
-		}
-		else{
-			res.json({success: false, msg: "Permission denied. You need to be a admin", data: []});
-		}
-	});
-
-});
-
-// get user
-router.get('/user/:id', checkAuth, (req, res) => {
-	// authorize for only own data access
-	if(req.params.id == req.session.user_id){
-		User.find({_id: req.params.id}, (err, user)=>{
-			if(!err){
-				res.json({success: true, msg: "", data: user});
-			}
-			else{
-				res.json({success: false, msg: "Invalid user", data: []});
-			}
-		}).select('-password_hash');
-	}
-	else
-	{
-		// authorization for admin to read data
-		getLoggedUser(req.session.user_id, function(err, logged_user){
-			if(err){
-				res.json({success: false, msg: "Please login again", data: []});
-			}
-			// check if admin
-			if(logged_user.role == 'admin'){
-				User.find({_id: req.params.id}, (error, user)=>{
-					if(!err)
-					{
-						res.json({success: true, msg: "Success", data: user});
-					}
-					else{
-						res.json({success: false, msg: "Permission denied. You need to be a admin", data: []});
-					}
-				}).select('-password_hash');
-			}
-		});
-	}
-
-
-});
+const app = express();
 
 // add user
 router.post('/user/add', (req, res) => {
@@ -165,6 +31,167 @@ router.post('/user/add', (req, res) => {
 		}
 	});
 });
+
+
+// verify user
+router.post('/user/verify', (req, res) => {
+	let curPass = req.body.password;
+	var pass_hash = "";
+	User.findOne({email: req.body.email},
+		(err, users)=>{
+			if(err){
+				res.json({success: false, msg: "Invalid", data: []});
+			}
+			if(users){
+				pass_hash = users.password_hash;
+				verification = password_hash.verify(curPass, pass_hash);
+				if(verification){
+					//req.session.user_id = users._id;
+					// token
+					const payload = {
+				      role: users.role,
+				      user_id: users._id
+				    };
+
+				    var token = jwt.sign({
+				    	exp: Math.floor(Date.now() / 1000) + (60 * 60), // 1 hour
+						data: payload
+					}, 'adipixel-secret');
+
+				    					//res.redirect(''+ users._id);
+					console.log("User logged in");
+					res.json({success: true, msg: "Login Successful", token: token});
+				}
+				else{
+					res.json({success: false, msg: "Invalid password", data: []});
+				}
+			}
+			else{
+					res.json({success: false, msg: "Invalid email id", data: []});
+				}
+	});
+
+});
+
+
+// jwt middleware to verify token
+router.use((req, res, next)=>{
+	var token = req.body.token || req.headers['token'];
+	console.log(token);
+	if(token){
+		jwt.verify(token, 'adipixel-secret', (err, decoded)=>{
+			if(err){
+
+				return res.json({success: false, msg: 'Token not valid or expired', data: []});
+			}
+			else{
+				req.decoded = decoded;
+				next();
+			}
+		});
+	}
+	else{
+		return res.status(403).json({success: false, msg: 'No token provided', data: []});
+	}
+})
+
+
+
+// check authentication
+function checkAuth(req, res, next) {
+	if (!req.session.user_id) {
+		res.json({success: false, msg: 'You are not authenticated to view this page', data: []});
+	}
+	else {
+		next();
+	}
+}
+
+// get logged user
+function getLoggedUser(id, callback) {
+	User.find({_id: id}).lean().exec(function (err, docs) {
+		if(err)
+		{
+			return false;
+		}
+		callback(null, JSON.parse(JSON.stringify(docs[0])));
+	});
+}
+
+// logout user
+router.get('/user/logout', function (req, res) {
+	if(req.session.user_id == null)
+	{
+		res.json({success: false, msg :"User not logged in", data: []});
+	}
+	else{
+		delete req.session.user_id;
+		res.json({success: true, msg :"Logged out", data: []});
+	}
+});
+
+// temp route
+router.get('/users/temp', (req, res) => {
+	User.find((error, userList)=>{
+		if(!error)
+		{
+			res.json({success: true, msg:"", data: userList});
+		}
+		else{
+			res.json({"success:" : false, "msg": "Permission denied. You need to be a admin"});
+		}
+	});
+});
+
+
+// get users
+router.get('/users', (req, res, next) => {
+	// athorizing user
+	if(req.decoded.data.role == "admin"){
+		User.find((error, userList)=>{
+			if(!error)
+			{
+				res.json({success: true, msg: "success", data: userList});
+			}
+			else{
+				res.json({success: false, msg: "Permission denied. You need to be a admin", data: []});
+			}
+		}).select('-password_hash');
+	}
+
+});
+
+// get user
+router.get('/user', (req, res) => {
+	User.find({_id: req.decoded.data.user_id}, (err, user)=>{
+		if(!err){
+			res.json({success: true, msg: "", data: user});
+		}
+		else{
+			res.json({success: false, msg: "Invalid user", data: []});
+		}
+	}).select('-password_hash');
+});
+
+// get user for admin
+router.get('/user/:id', (req, res) => {
+	if(req.decoded.data.role == "admin"){
+		User.find({_id: req.params.id}, (err, user)=>{
+			if(!err){
+				res.json({success: true, msg: "", data: user});
+			}
+			else{
+				res.json({success: false, msg: "Invalid user", data: []});
+			}
+		}).select('-password_hash');
+	}
+	else{
+		res.json({success: false, msg: "Permission denied. You need to be a admin", data: []});
+	}
+});
+
+
+
 
 // update user
 router.put('/user/update/:id', checkAuth, (req, res) => {

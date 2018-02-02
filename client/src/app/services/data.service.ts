@@ -9,8 +9,10 @@ export class DataService {
     console.log('Data Service Connected');
   }
 
-  getUsers(){
-    return this.http.get('http://localhost:3000/api/users')
+  getUsers(token){
+    let headers = new Headers({'token': token});
+    let options = new RequestOptions({headers:headers});
+    return this.http.get('http://localhost:3000/api/users', options)
     .map(res => res.json());
   }
 

@@ -4,7 +4,7 @@ const path = require('path');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const session = require('express-session');
-
+var jwt = require('jsonwebtoken');
 
 
 const app = express();

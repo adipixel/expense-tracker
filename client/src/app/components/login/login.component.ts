@@ -22,16 +22,20 @@ export class LoginComponent implements OnInit {
   loggedIn: boolean;
   response: Response;
   user_id: string;
+  token:string;
 
   constructor(private dataService:DataService, private router:Router) { 
     console.log();
-    if (this.loggedIn){
-      
-    }
   }
 
   ngOnInit() {
-    
+    var token = localStorage.getItem('token');
+    if(token){
+      this.router.navigate(['dashboard']);
+    }
+    else{
+      //
+    }
   }
 
   signupSubmit(){
@@ -60,7 +64,8 @@ export class LoginComponent implements OnInit {
     this.dataService.verifyUser(user)
     .subscribe(user => {
       if(user.success){
-        this.user_id = user.data;
+        this.token = user.token;
+        localStorage.setItem('token', user.token);
       }
     },
     (err)=> console.log("error callback"),
@@ -69,7 +74,7 @@ export class LoginComponent implements OnInit {
   }
 
   callDashboard(){
-    console.log(this.user_id);
+    console.log(this.token);
     this.router.navigate(['dashboard']);
   }
 

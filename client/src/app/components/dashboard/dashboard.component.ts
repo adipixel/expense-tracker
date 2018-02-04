@@ -1,15 +1,20 @@
 import { Component, OnInit } from '@angular/core';
 import { DataService } from  '../../services/data.service';
 import { Router } from '@angular/router';
+import { DashSidebarComponent } from '../dash-sidebar/dash-sidebar.component';
 
 @Component({
   selector: 'app-dashboard',
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css']
 })
+
+
+
 export class DashboardComponent implements OnInit {
-  users: User[];
+  user: User;
   response: Response;
+  master = 'Master';
 
   constructor(private dataService:DataService, private router:Router) {
     
@@ -17,19 +22,35 @@ export class DashboardComponent implements OnInit {
 
   ngOnInit() {
     var token = localStorage.getItem('token');
-    this.dataService.getUsers(token).subscribe(users => {
-      if (users.success){
-        this.users = users.data;
-        console.log(users.data);
+    this.dataService.getProfile(token).subscribe(user => {
+      if (user.success){
+        this.user = user.data[0];
+        console.log(user.data[0]);
       }
       else{
         // error handling
+        console.log(user.msg);
+        localStorage.removeItem('token');
         this.router.navigate(['']);
-        console.log(users.msg);
       }
     })
   }
 
+  updateExpenses(){
+    var token = localStorage.getItem('token');
+    this.dataService.getProfile(token).subscribe(user => {
+      if (user.success){
+        this.user = user.data[0];
+        console.log(user.data[0]);
+      }
+      else{
+        // error handling
+        console.log(user.msg);
+        localStorage.removeItem('token');
+        this.router.navigate(['']);
+      }
+    })
+  }
 }
 
 interface User{

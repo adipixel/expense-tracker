@@ -77,7 +77,6 @@ router.post('/user/verify', (req, res) => {
 // jwt middleware to verify token
 router.use((req, res, next)=>{
 	var token = req.body.token || req.headers['token'];
-	console.log(token);
 	if(token){
 		jwt.verify(token, 'adipixel-secret', (err, decoded)=>{
 			if(err){
@@ -107,41 +106,6 @@ function checkAuth(req, res, next) {
 	}
 }
 
-// get logged user
-function getLoggedUser(id, callback) {
-	User.find({_id: id}).lean().exec(function (err, docs) {
-		if(err)
-		{
-			return false;
-		}
-		callback(null, JSON.parse(JSON.stringify(docs[0])));
-	});
-}
-
-// logout user
-router.get('/user/logout', function (req, res) {
-	if(req.session.user_id == null)
-	{
-		res.json({success: false, msg :"User not logged in", data: []});
-	}
-	else{
-		delete req.session.user_id;
-		res.json({success: true, msg :"Logged out", data: []});
-	}
-});
-
-// temp route
-router.get('/users/temp', (req, res) => {
-	User.find((error, userList)=>{
-		if(!error)
-		{
-			res.json({success: true, msg:"", data: userList});
-		}
-		else{
-			res.json({"success:" : false, "msg": "Permission denied. You need to be a admin"});
-		}
-	});
-});
 
 
 // get users
@@ -193,7 +157,7 @@ router.get('/user/:id', (req, res) => {
 
 
 
-// update user
+// update user - need to update for jwt
 router.put('/user/update/:id', checkAuth, (req, res) => {
 	// authorize for only own data access
 	if(req.params.id == req.session.user_id){
@@ -228,7 +192,7 @@ router.put('/user/update/:id', checkAuth, (req, res) => {
 });
 
 
-// delete user
+// delete user - needs to update for jwt
 router.delete('/user/delete/:id', checkAuth, (req, res) => {
 	// authorize for only own data access
 	if(req.params.id == req.session.user_id){
@@ -249,31 +213,27 @@ router.delete('/user/delete/:id', checkAuth, (req, res) => {
 
 
 // add expense
-router.post('/expense/add/:id', checkAuth, (req, res) => {
+router.post('/expense/add', (req, res) => {
 
 	// authorize for only own data access
-	if(req.params.id == req.session.user_id){
-		User.update({_id: req.params.id},
-			{
-				$push: {
-							"expenses" :{
-								$each: [{"createdAt": Date.now(), "amount": req.body.expense.amount, "description": req.body.expense.description}]
-							}
+	User.update({_id: req.decoded.data.user_id},
+		{
+			$push: {
+						"expenses" :{
+							$each: [{"createdAt": Date.now(), "amount": req.body.amount, "description": req.body.description}]
 						}
-			},
-			(err, result)=>{
-			if (err){
-				res.json({msg: 'Failed to add expense: '+ err});
-			}
-			else
-			{
-				res.json(result);
-			}
-		});
-	}
-	else{
-		res.json({msg: 'Authorization failed'});
-	}
+					}
+		},
+		(err, result)=>{
+		if (err){
+			res.json({success: false, msg: 'Failed to add expense: '+ err});
+		}
+		else
+		{
+			console.log("expense added");
+			res.json({success: true, msg:"Expense added", data: result});
+		}
+	});
 
 });
 

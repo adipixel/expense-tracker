@@ -16,8 +16,10 @@ export class DataService {
     .map(res => res.json());
   }
 
-  getProfile(user_id){
-    return this.http.get('http://localhost:3000/api/user/'+user_id)
+  getProfile(token){
+    let headers = new Headers({'token': token});
+    let options = new RequestOptions({headers:headers});
+    return this.http.get('http://localhost:3000/api/user', options)
     .map(res => res.json());
   }
 
@@ -35,4 +37,12 @@ export class DataService {
     .map(res => res.json());
   }
 
+  addExpense(exp){
+    var token = localStorage.getItem('token');
+    let headers = new Headers({'token': token, 'Content-Type': 'application/json'});
+    let options = new RequestOptions({headers:headers});
+    return this.http.post('http://localhost:3000/api//expense/add', exp, options)
+    .map(res => res.json());
+
+  }
 }

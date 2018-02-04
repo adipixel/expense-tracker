@@ -1,0 +1,34 @@
+<div class="container">
+  <div class="row">
+    <div class="col-sm-12 col-md-8 col-lg-6">
+      <h5>Recent Expenses</h5>
+      <br />
+      <table class="table table-hover table-sm">
+        <thead>
+          <tr>
+            <th scope="col">Description</th>
+            <th scope="col">Amount</th>
+          </tr>
+        </thead>
+        <tbody *ngFor = "let expense of user.expenses">
+          <tr>
+            <td>{{expense.description}}</td>
+            <td>{{expense.amount}}</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="col-sm-12 col-md-8 col-lg-6 p-0">
+        <h6><strong>Total Expense: {{total_exp}}</strong></h6> 
+      </div>
+    </div>
+    <div class="col-sm-12 col-md-8 col-lg-6 card card-body">
+        <h6>Add Expense</h6>
+        <form class="row ">
+            <div class="col-md-7"><input name="description" [(ngModel)]="description" class="form-control" type="text" placeholder="Short Description"></div>
+            <div class="col-md-3"><input name="amount" [(ngModel)]="amount" class="form-control" type="number" placeholder="$"></div>
+            <div class="col-md-2"><button class="btn btn-default" (click)="addExpense()" >Add</button></div>
+        </form>
+        
+      </div>
+  </div>
+</div>

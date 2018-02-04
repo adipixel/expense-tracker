@@ -11,6 +11,9 @@ import { DataService } from  './services/data.service';
 import { AboutComponent } from './components/about/about.component';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { NavbarComponent } from './components/navbar/navbar.component';
+import { DashSidebarComponent } from './components/dash-sidebar/dash-sidebar.component';
+import { DashBodyComponent } from './components/dash-body/dash-body.component';
+
 
 const appRoutes: Routes = [
   {path: '', component:LoginComponent},
@@ -24,7 +27,9 @@ const appRoutes: Routes = [
     LoginComponent,
     AboutComponent,
     DashboardComponent,
-    NavbarComponent
+    NavbarComponent,
+    DashSidebarComponent,
+    DashBodyComponent
   ],
   imports: [
     BrowserModule,

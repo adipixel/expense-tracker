@@ -3,6 +3,7 @@ import { forEach } from '@angular/router/src/utils/collection';
 import { Router } from '@angular/router';
 import { DataService } from '../../services/data.service';
 
+
 @Component({
   selector: 'app-dash-body',
   templateUrl: './dash-body.component.html',
@@ -13,18 +14,26 @@ export class DashBodyComponent implements OnInit {
   @Input() user: User;
   @Output() myEvent = new EventEmitter();
 
-  total_exp: Number = 0;
-  amount: Number;
+  total_exp: number = 0;
+  amount: number;
   description: string;
 
   constructor(private dataService:DataService, private router:Router) { }
 
   ngOnInit() {
-    var add: Number;
-    for (let ex of this.user.expenses){
-      this.total_exp += ex.amount;
-    }
+    this.updateTotal();
+    
   }
+
+  updateTotal(){
+    var add: number = 0;
+    for (let ex of this.user.expenses){
+      add += ex.amount;
+    }
+    this.total_exp = add;
+    console.log("Total Updated: "+ this.total_exp);
+  }
+
 
   addExpense(){
     var exp = {
@@ -33,11 +42,14 @@ export class DashBodyComponent implements OnInit {
     }
     this.dataService.addExpense(exp).subscribe(response => {
       if(response.success){
-        console.log(response.result);
-        this.myEvent.emit(null)
-        this.ngOnInit();
+        console.log(response.msg);
+        this.total_exp = this.total_exp + this.amount;
+        this.myEvent.emit(null);
 
       }
+    }, (err)=> console.log(err),
+    ()=>{
+      //this.updateTotal();
     });
     
     
@@ -54,11 +66,9 @@ export class DashBodyComponent implements OnInit {
 }
 
 
-}
-
 // interface Expense{
 //   description: string;
-//   amount: Number
+//   amount: number
 // }
 interface User{
   first_name: string,

@@ -1,3 +1,12 @@
 .table{
     height: 300px;
 }
+
+.table-row input {
+    border: 0 none;
+    width: 100%;
+}
+
+.table-row .amount{
+    width: 70px;
+}

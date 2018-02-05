@@ -194,7 +194,7 @@ router.put('/user/update/:id', checkAuth, (req, res) => {
 
 // delete user - needs to update for jwt
 router.delete('/user/delete/:id', checkAuth, (req, res) => {
-	// authorize for only own data access
+
 	if(req.params.id == req.session.user_id){
 		User.remove({_id: req.params.id}, (err, result)=>{
 			if (err){
@@ -215,7 +215,6 @@ router.delete('/user/delete/:id', checkAuth, (req, res) => {
 // add expense
 router.post('/expense/add', (req, res) => {
 
-	// authorize for only own data access
 	User.update({_id: req.decoded.data.user_id},
 		{
 			$push: {
@@ -238,58 +237,46 @@ router.post('/expense/add', (req, res) => {
 });
 
 // update expense
-router.put('/expense/update/:id/:expense_id', checkAuth, (req, res) => {
+router.put('/expense/update/', (req, res) => {
 
-	// authorize for only own data access
-	if(req.params.id == req.session.user_id){
-		User.update({'expenses._id': req.params.expense_id},
-			{
-				$set: {
-					'expenses.$.createdAt': Date.now(), 'expenses.$.amount': req.body.expense.amount, 'expenses.$.description': req.body.expense.description
-				}
-			},
-			(err, result)=>{
-			if (err){
-				res.json({msg: 'Failed to update expense: '+ err});
+	User.update({'expenses._id': req.body._id},
+		{
+			$set: {
+				'expenses.$.createdAt': Date.now(), 'expenses.$.amount': req.body.amount, 'expenses.$.description': req.body.description
 			}
-			else
-			{
-				res.json(result);
-			}
-		});
-	}
-	else{
-		res.json({msg: 'Authorization failed'});
-	}
-
+		},
+		(err, result)=>{
+		if (err){
+			res.json({success: true, msg: 'Failed to update expense: '+ err, data: result});
+		}
+		else
+		{
+			res.json(result);
+		}
+	});
 
 });
 
 
 // delete expense
-router.delete('/expense/delete/:id/:expense_id', checkAuth, (req, res) => {
+router.delete('/expense/delete/:expense_id', (req, res) => {
 
 	// authorize for only own data access
-	if(req.params.id == req.session.user_id){
-		User.update({_id: req.params.id},
-			{
-				$pull: {
-					expenses: {_id: req.params.expense_id}
-				}
-			},
-			(err, result)=>{
-			if (err){
-				res.json({msg: 'Failed to delete expense: '+ err});
+	User.update({_id: req.decoded.data.user_id},
+		{
+			$pull: {
+				expenses: {_id: req.params.expense_id}
 			}
-			else
-			{
-				res.json(result);
-			}
-		});
-	}
-	else{
-		res.json({msg: 'Authorization failed'});
-	}
+		},
+		(err, result)=>{
+		if (err){
+			res.json({success: false, msg: 'Failed to delete expense: '+ err, data: []});
+		}
+		else
+		{
+			res.json({success: true, msg:"Expense Deleted", data: result});
+		}
+	});
 
 
 });

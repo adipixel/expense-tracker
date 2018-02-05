@@ -43,6 +43,21 @@ export class DataService {
     let options = new RequestOptions({headers:headers});
     return this.http.post('http://localhost:3000/api//expense/add', exp, options)
     .map(res => res.json());
+  }
 
+  deleteExpense(id){
+    var token = localStorage.getItem('token');
+    let headers = new Headers({'token': token, 'Content-Type': 'application/json'});
+    let options = new RequestOptions({headers:headers});
+    return this.http.delete('http://localhost:3000/api/expense/delete/'+id, options)
+    .map(res => res.json());
+  }
+
+  updateExpense(exp){
+    var token = localStorage.getItem('token');
+    let headers = new Headers({'token': token, 'Content-Type': 'application/json'});
+    let options = new RequestOptions({headers:headers});
+    return this.http.put('http://localhost:3000/api/expense/update/', exp, options)
+    .map(res => res.json());
   }
 }

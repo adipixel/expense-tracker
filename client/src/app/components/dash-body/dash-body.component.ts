@@ -1,8 +1,13 @@
 import { Component, OnInit, Input, Output, EventEmitter, SimpleChanges } from '@angular/core';
+import { NgModule } from '@angular/core';
 import { forEach } from '@angular/router/src/utils/collection';
 import { Router } from '@angular/router';
 import { DataService } from '../../services/data.service';
+import { CustomMaterialModule } from '../../modules/custom-material/custom-material.module';
 
+@NgModule({
+  imports: [CustomMaterialModule],
+})
 
 @Component({
   selector: 'app-dash-body',
@@ -13,6 +18,8 @@ export class DashBodyComponent implements OnInit {
 
   @Input() user: User;
   @Output() myEvent = new EventEmitter();
+
+  disableUpdateBtn:boolean = true;
 
   total_exp: number = 0;
   amount: number;
@@ -41,28 +48,47 @@ export class DashBodyComponent implements OnInit {
       amount: this.amount
     }
     this.dataService.addExpense(exp).subscribe(response => {
+      console.log(response.msg);
       if(response.success){
-        console.log(response.msg);
         this.total_exp = this.total_exp + this.amount;
         this.myEvent.emit(null);
-
       }
     }, (err)=> console.log(err),
     ()=>{
       //this.updateTotal();
     });
-    
-    
-
   }
 
+  deleteExpense(ex){
+    this.dataService.deleteExpense(ex._id).subscribe(response => {
+      console.log(response.msg);
+      if(response.success){
+        this.total_exp = this.total_exp - ex.amount;
+        this.myEvent.emit(null);
+      }
+    });
+  }
 
+  updateExpense(expIn){
+    var exp = {
+      _id: expIn._id,
+      description: expIn.description,
+      amount: expIn.amount
+    }
+    this.dataService.updateExpense(exp).subscribe(response => {
+      console.log(response.msg);
+      if(response.success){
+        this.myEvent.emit(null);
+      }
+    }, (err)=> console.log(err),
+    ()=>{
+      this.updateTotal();
+    });
+  }
 
-  // ngOnChanges(changes: SimpleChanges) {
-  //   // only run when property "data" changed
-  //   if (changes['user']) {
-  //       this.user = this.groupByCategory(this.data);
-  //   }
+  enableUpdateBtn(event){
+    console.log(event);
+  }
 }
 
 

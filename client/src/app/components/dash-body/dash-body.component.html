@@ -6,16 +6,24 @@
       <table class="table table-hover table-sm table-custom">
         <thead>
           <tr>
+            <th scope="col">Time</th>
             <th scope="col">Description</th>
             <th scope="col">Amount</th>
-            <th scope="col">TimeStamp</th>
+            <th scope="col">Actions</th>
           </tr>
         </thead>
-        <tbody *ngFor = "let expense of user.expenses">
-          <tr>
-            <td>{{expense.description}}</td>
-            <td>{{expense.amount}}</td>
+        <tbody *ngFor = "let expense of user.expenses" > 
+          <tr class="table-row">
             <td>{{expense.createdAt | date: 'shortTime'}}</td>
+            <td><input matInput type="text"  [(ngModel)]="expense.description" matTooltip="Click to edit"></td>
+            <td><input matInput type="number" maxlength="8" class="amount" [(ngModel)]="expense.amount" 
+              (blur)="updateExpense(expense)"
+              matTooltip="Click to edit"></td>
+            <td>
+              <button mat-icon-button>
+                  <mat-icon (click)="deleteExpense(expense)" color="warn" matTooltip="Delete expense">delete</mat-icon>
+              </button>
+            </td>
           </tr>
         </tbody>
       </table>
@@ -27,8 +35,8 @@
         <h6>Add Expense</h6>
         <form class="row ">
             <div class="col-md-7"><input name="description" [(ngModel)]="description" class="form-control" type="text" placeholder="Short Description"></div>
-            <div class="col-md-3"><input name="amount" [(ngModel)]="amount" class="form-control" type="number" placeholder="$"></div>
-            <div class="col-md-2"><button class="btn btn-default" (click)="addExpense()" >Add</button></div>
+            <div class="col-md-2 p-0" ><input name="amount" [(ngModel)]="amount" class="form-control" type="number" placeholder="$"></div>
+            <div class="col-md-3"><button mat-raised-button color="primary" class="btn btn-primary"  [disabled]="amount == null || description == null" (click)="addExpense()" >Add</button></div>
         </form>
         
       </div>

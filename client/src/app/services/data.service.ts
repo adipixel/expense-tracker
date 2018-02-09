@@ -41,7 +41,7 @@ export class DataService {
     var token = localStorage.getItem('token');
     let headers = new Headers({'token': token, 'Content-Type': 'application/json'});
     let options = new RequestOptions({headers:headers});
-    return this.http.post('http://localhost:3000/api//expense/add', exp, options)
+    return this.http.post('http://localhost:3000/api/expense/add', exp, options)
     .map(res => res.json());
   }
 

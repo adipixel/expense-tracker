@@ -35,3 +35,16 @@ A MEAN stack single page application to manage your expenses and track your spen
 - Angular 5 client interaction with server
 - How web frameworks assist in developing a manageable codebase
 - How frameworks can decrease the time required developing an application and provide a number of utilities
+
+### Execution Instructions
+For Server
+- Run `npm install`
+- Run `nodemon`
+- The server starts running on port 3000
+
+For Client
+- Navigate to client directory (`cd client`)
+- Run `npm install`
+- Run `ng serve`
+- Client starts running on port 4200
+- Visit `localhost:4200` from the browser
